@@ -1,0 +1,308 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+API=${API:-http://localhost:4000/logs}
+
+echo "Posting sample logs to $API"
+
+# 1
+curl -s -X POST "$API" -H "Content-Type: application/json" --data-binary @- <<'JSON'
+{
+  "level": "error",
+  "message": "Failed to connect to database.",
+  "resourceId": "server-1234",
+  "timestamp": "2025-08-14T06:10:00Z",
+  "traceId": "abc-xyz-001",
+  "spanId": "span-001",
+  "commit": "a1b2c3d",
+  "metadata": { "parentResourceId": "server-5678" }
+}
+JSON
+echo
+
+# 2
+curl -s -X POST "$API" -H "Content-Type: application/json" --data-binary @- <<'JSON'
+{
+  "level": "error",
+  "message": "Payment service timeout while calling /charge",
+  "resourceId": "payment-svc-01",
+  "timestamp": "2025-08-14T06:15:00Z",
+  "traceId": "tx-0001",
+  "spanId": "charge-01",
+  "commit": "d4e5f6a",
+  "metadata": { "parentResourceId": "api-gateway-01", "region": "ap-south-1" }
+}
+JSON
+echo
+
+# 3
+curl -s -X POST "$API" -H "Content-Type: application/json" --data-binary @- <<'JSON'
+{
+  "level": "warn",
+  "message": "Message queue length above threshold",
+  "resourceId": "worker-02",
+  "timestamp": "2025-08-14T06:20:00Z",
+  "traceId": "mq-555",
+  "spanId": "poll-777",
+  "commit": "d4e5f6a",
+  "metadata": { "queue": "ingest-high", "length": 1242 }
+}
+JSON
+echo
+
+# 4
+curl -s -X POST "$API" -H "Content-Type: application/json" --data-binary @- <<'JSON'
+{
+  "level": "info",
+  "message": "User login successful",
+  "resourceId": "web-frontend-01",
+  "timestamp": "2025-08-14T06:25:00Z",
+  "traceId": "auth-2025-08-14-1",
+  "spanId": "login-flow-1",
+  "commit": "7aa8890",
+  "metadata": { "userId": "u_1293", "ip": "103.55.16.4" }
+}
+JSON
+echo
+
+# 5
+curl -s -X POST "$API" -H "Content-Type: application/json" --data-binary @- <<'JSON'
+{
+  "level": "debug",
+  "message": "Feature flag checkout_v2 evaluated to true",
+  "resourceId": "web-frontend-01",
+  "timestamp": "2025-08-14T06:26:00Z",
+  "traceId": "ff-001",
+  "spanId": "eval-ff",
+  "commit": "7aa8890",
+  "metadata": { "flag": "checkout_v2", "variant": "A" }
+}
+JSON
+echo
+
+# 6
+curl -s -X POST "$API" -H "Content-Type: application/json" --data-binary @- <<'JSON'
+{
+  "level": "info",
+  "message": "Cache hit for product list",
+  "resourceId": "cache-redis-01",
+  "timestamp": "2025-08-13T14:02:00Z",
+  "traceId": "cache-02",
+  "spanId": "redis-get-1",
+  "commit": "1f2e3d4",
+  "metadata": { "key": "products:list:homepage", "ttl": 55 }
+}
+JSON
+echo
+
+# 7
+curl -s -X POST "$API" -H "Content-Type: application/json" --data-binary @- <<'JSON'
+{
+  "level": "error",
+  "message": "Out of memory while processing report",
+  "resourceId": "reporting-job-03",
+  "timestamp": "2025-08-13T10:45:00Z",
+  "traceId": "job-aug13-001",
+  "spanId": "step-5",
+  "commit": "a1b2c3d",
+  "metadata": { "jobId": "rep_20250813_001", "attempt": 2 }
+}
+JSON
+echo
+
+# 8
+curl -s -X POST "$API" -H "Content-Type: application/json" --data-binary @- <<'JSON'
+{
+  "level": "warn",
+  "message": "Disk usage at 85% on /var",
+  "resourceId": "server-1234",
+  "timestamp": "2025-08-12T22:30:00Z",
+  "traceId": "srv-1234-health",
+  "spanId": "disk-check",
+  "commit": "a1b2c3d",
+  "metadata": { "mount": "/var", "percent": 85 }
+}
+JSON
+echo
+
+# 9
+curl -s -X POST "$API" -H "Content-Type: application/json" --data-binary @- <<'JSON'
+{
+  "level": "info",
+  "message": "Order placed successfully",
+  "resourceId": "orders-svc-02",
+  "timestamp": "2025-08-12T15:10:00Z",
+  "traceId": "order-8472",
+  "spanId": "create-order",
+  "commit": "5e5342f",
+  "metadata": { "orderId": "o_8472", "amount": 1999 }
+}
+JSON
+echo
+
+# 10
+curl -s -X POST "$API" -H "Content-Type: application/json" --data-binary @- <<'JSON'
+{
+  "level": "debug",
+  "message": "Retrying request to inventory",
+  "resourceId": "orders-svc-02",
+  "timestamp": "2025-08-12T15:10:03Z",
+  "traceId": "order-8472",
+  "spanId": "retry-1",
+  "commit": "5e5342f",
+  "metadata": { "backoffMs": 200 }
+}
+JSON
+echo
+
+# 11
+curl -s -X POST "$API" -H "Content-Type: application/json" --data-binary @- <<'JSON'
+{
+  "level": "error",
+  "message": "Inventory service returned 500",
+  "resourceId": "inventory-svc-01",
+  "timestamp": "2025-08-12T15:10:05Z",
+  "traceId": "order-8472",
+  "spanId": "inv-req-1",
+  "commit": "5e5342f",
+  "metadata": { "path": "/inventory/check", "status": 500 }
+}
+JSON
+echo
+
+# 12
+curl -s -X POST "$API" -H "Content-Type: application/json" --data-binary @- <<'JSON'
+{
+  "level": "info",
+  "message": "Background sync completed",
+  "resourceId": "sync-daemon-01",
+  "timestamp": "2025-08-11T05:00:00Z",
+  "traceId": "sync-2025-08-11",
+  "spanId": "finalize",
+  "commit": "9fedcba",
+  "metadata": { "records": 12045, "durationMs": 43210 }
+}
+JSON
+echo
+
+# 13
+curl -s -X POST "$API" -H "Content-Type: application/json" --data-binary @- <<'JSON'
+{
+  "level": "warn",
+  "message": "Slow query detected on /search",
+  "resourceId": "api-gateway-01",
+  "timestamp": "2025-08-10T12:15:00Z",
+  "traceId": "search-001",
+  "spanId": "route-search",
+  "commit": "9fedcba",
+  "metadata": { "latencyMs": 920, "client": "web" }
+}
+JSON
+echo
+
+# 14
+curl -s -X POST "$API" -H "Content-Type: application/json" --data-binary @- <<'JSON'
+{
+  "level": "info",
+  "message": "Email sent to customer",
+  "resourceId": "notify-svc-01",
+  "timestamp": "2025-08-10T08:40:00Z",
+  "traceId": "mail-7788",
+  "spanId": "sendgrid-1",
+  "commit": "3b4c5d6",
+  "metadata": { "to": "user@example.com", "template": "order-confirmation" }
+}
+JSON
+echo
+
+# 15
+curl -s -X POST "$API" -H "Content-Type: application/json" --data-binary @- <<'JSON'
+{
+  "level": "debug",
+  "message": "Parsing webhook payload",
+  "resourceId": "notify-svc-01",
+  "timestamp": "2025-08-10T08:39:55Z",
+  "traceId": "mail-7788",
+  "spanId": "parse-1",
+  "commit": "3b4c5d6",
+  "metadata": { "headers": { "x-sig": "abcd" } }
+}
+JSON
+echo
+
+# 16
+curl -s -X POST "$API" -H "Content-Type: application/json" --data-binary @- <<'JSON'
+{
+  "level": "error",
+  "message": "Unauthorized access attempt detected",
+  "resourceId": "web-frontend-02",
+  "timestamp": "2025-08-09T21:00:00Z",
+  "traceId": "auth-fail-99",
+  "spanId": "guard-1",
+  "commit": "1f2e3d4",
+  "metadata": { "userId": "unknown", "path": "/admin" }
+}
+JSON
+echo
+
+# 17
+curl -s -X POST "$API" -H "Content-Type: application/json" --data-binary @- <<'JSON'
+{
+  "level": "info",
+  "message": "Cron started: cleanup",
+  "resourceId": "maintenance-01",
+  "timestamp": "2025-08-09T02:10:00Z",
+  "traceId": "cron-cleanup-1",
+  "spanId": "start",
+  "commit": "cccc111",
+  "metadata": { "node": "srv-1" }
+}
+JSON
+echo
+
+# 18
+curl -s -X POST "$API" -H "Content-Type: application/json" --data-binary @- <<'JSON'
+{
+  "level": "info",
+  "message": "Cron finished: cleanup",
+  "resourceId": "maintenance-01",
+  "timestamp": "2025-08-09T02:11:12Z",
+  "traceId": "cron-cleanup-1",
+  "spanId": "finish",
+  "commit": "cccc111",
+  "metadata": { "removedFiles": 54 }
+}
+JSON
+echo
+
+# 19
+curl -s -X POST "$API" -H "Content-Type: application/json" --data-binary @- <<'JSON'
+{
+  "level": "warn",
+  "message": "High latency to database detected",
+  "resourceId": "server-1234",
+  "timestamp": "2025-08-08T18:22:04Z",
+  "traceId": "db-lat-1",
+  "spanId": "ping-1",
+  "commit": "a1b2c3d",
+  "metadata": { "latencyMs": 780 }
+}
+JSON
+echo
+
+# 20
+curl -s -X POST "$API" -H "Content-Type: application/json" --data-binary @- <<'JSON'
+{
+  "level": "debug",
+  "message": "A/B decision for banner set to variant B",
+  "resourceId": "web-frontend-02",
+  "timestamp": "2025-08-08T09:01:00Z",
+  "traceId": "ab-20250808",
+  "spanId": "choose-ab",
+  "commit": "7aa8890",
+  "metadata": { "experiment": "banner_home", "variant": "B" }
+}
+JSON
+echo
+
+echo "Done."
